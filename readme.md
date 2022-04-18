@@ -7,8 +7,9 @@
 发布在Jitpack可快速引用
 
 
-## How to Use
+## 使用
 
+### 1.初始化对应状态布局
 如果多个页面共享加载和重试页面，建议全局设置个基本的。比如在Application中：
 
 ```java
@@ -18,38 +19,55 @@ public class MyApplication extends Application
     public void onCreate()
     {
         super.onCreate();
-        LoadingAndRetryManager.BASE_RETRY_LAYOUT_ID = R.layout.base_retry;
-        LoadingAndRetryManager.BASE_LOADING_LAYOUT_ID = R.layout.base_loading;
-        LoadingAndRetryManager.BASE_EMPTY_LAYOUT_ID = R.layout.base_empty;
+        //设置布局
+        LoadingAndRetryManager.BASE_RETRY_LAYOUT_ID = R.layout.base_retry; //重试
+        LoadingAndRetryManager.BASE_LOADING_LAYOUT_ID = R.layout.base_loading; //加载中
+        LoadingAndRetryManager.BASE_EMPTY_LAYOUT_ID = R.layout.base_empty;//空数据
     }
 }
 ```
 
+> PS: 如果只是单个Activity或Fragment用到，也可以在对应的Activity或Fragment进行布局的设置
+
+### 2.Activity初始化对象
 在Activity中：
 
 ```java
-public class MainActivity extends AppCompatActivity
-{
-    LoadingAndRetryManager mLoadingAndRetryManager;
+class MainActivity : AppCompatActivity() {
+    lateinit var mLoadingAndRetryManager: LoadingAndRetryManager
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        mLoadingAndRetryManager = LoadingAndRetryManager.generate(this, listener);
+        mLoadingAndRetryManager = LoadingAndRetryManager.generate(this,object :
+            OnLoadingAndRetryListener() {
+            override fun setRetryEvent(retryView: View?) {
+                //设置重试页面的点击事件
+                retryView?.findViewById<Button>(R.id.id_btn_retry)?.setOnClickListener {
+                   loadData()
+                }
+            }
+        })
 
-        loadData();
-
+        loadData()
     }
+
+    //模拟加载数据
+    fun loadData() {
+        thread {
+            mLoadingAndRetryManager.showLoading()
+            Thread.sleep(2000)
+            runOnUiThread {
+                mLoadingAndRetryManager.showRetry()
+            }
+        }
+    }
+}
 ```
-
-只需要在onCreate中调用`LoadingAndRetryManager.generate(this,callback)`即可。
-
 * 在Fragment中与Activity中用法一致。
 
-* 为任何View添加，只需要将第一个参数改成对应的View即可。
+* 为任何View添加，只需要将`LoadingAndRetryManager.generate()`的第一个参数改成对应的View即可。
 
 
 如果需要针对单个Activity、Fragment、View定制页面，重写接口的回调方法：
