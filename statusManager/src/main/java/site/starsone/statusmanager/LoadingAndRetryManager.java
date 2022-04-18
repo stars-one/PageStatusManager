@@ -79,6 +79,49 @@ public class LoadingAndRetryManager {
         mLoadingAndRetryLayout = loadingAndRetryLayout;
     }
 
+    /**
+     * 单独设置view(针对单Activity多Fragment的结构)
+     */
+    public LoadingAndRetryManager(View activityOrFragmentOrView, OnLoadingAndRetryListener listener) {
+        if (listener == null) listener = DEFAULT_LISTENER;
+
+        ViewGroup contentParent = null;
+        Context context;
+        View view = activityOrFragmentOrView;
+        contentParent = (ViewGroup) (view.getParent());
+        context = view.getContext();
+
+        int childCount = contentParent.getChildCount();
+        //get contentParent
+        int index = 0;
+        View oldContent;
+
+        oldContent = (View) activityOrFragmentOrView;
+        for (int i = 0; i < childCount; i++) {
+            if (contentParent.getChildAt(i) == oldContent) {
+                index = i;
+                break;
+            }
+        }
+
+        contentParent.removeView(oldContent);
+        //setup content layout
+        LoadingAndRetryLayout loadingAndRetryLayout = new LoadingAndRetryLayout(context);
+
+        ViewGroup.LayoutParams lp = oldContent.getLayoutParams();
+        contentParent.addView(loadingAndRetryLayout, index, lp);
+        loadingAndRetryLayout.setContentView(oldContent);
+        // setup loading,retry,empty layout
+        setupLoadingLayout(listener, loadingAndRetryLayout);
+        setupRetryLayout(listener, loadingAndRetryLayout);
+        setupEmptyLayout(listener, loadingAndRetryLayout);
+        //callback
+        listener.setRetryEvent(loadingAndRetryLayout.getRetryView());
+        listener.setLoadingEvent(loadingAndRetryLayout.getLoadingView());
+        listener.setEmptyEvent(loadingAndRetryLayout.getEmptyView());
+        mLoadingAndRetryLayout = loadingAndRetryLayout;
+    }
+
     private void setupEmptyLayout(OnLoadingAndRetryListener listener, LoadingAndRetryLayout loadingAndRetryLayout) {
         if (listener.isSetEmptyLayout()) {
             int layoutId = listener.generateEmptyLayoutId();
