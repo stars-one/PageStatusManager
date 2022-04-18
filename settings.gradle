@@ -1,0 +1,3 @@
+include ':statusManager'
+include ':app'
+rootProject.name = "PageStatusManager"
