@@ -1,11 +1,18 @@
 # PageStatusManager
 
+<img id="badge" src="https://jitpack.io/v/stars-one/PageStatusManager.svg">
+
 无缝为Activity、Fragment、任何View设置加载（loading）、重试(retry)和无数据（empty）页面。
 
 基于[hongyangAndroid/LoadingAndRetryManager](https://github.com/hongyangAndroid/LoadingAndRetryManager)进行Kotlin的相关优化
 
 发布在Jitpack可快速引用
 
+## 引入
+
+```
+implementation 'com.github.stars-one:PageStatusManager:0.1'
+```
 
 ## 使用
 
