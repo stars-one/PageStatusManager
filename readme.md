@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         thread {
             mLoadingAndRetryManager.showLoading()
             Thread.sleep(2000)
+            //加载失败的显示(相应的,加载成功调用showContent即可)
             runOnUiThread {
                 mLoadingAndRetryManager.showRetry()
             }
@@ -76,6 +77,35 @@ class MainActivity : AppCompatActivity() {
 
 * 为任何View添加，只需要将`LoadingAndRetryManager.generate()`的第一个参数改成对应的View即可。
 
+PS: 目前如果是在约束布局中使用有坑,
+
+比如说,下面代码(省略了根布局的约束布局),到时候调用showContent的时候,是无法显示出此View的,原因是设置LayoutParam的高度计算不对(暂时还没有细究,解决方法在下面)
+```xml
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/rv"
+    android:layout_width="match_parent"
+    app:layout_constraintTop_toBottomOf="@id/toolbar"
+    app:layout_constraintBottom_toBottomOf="parent"
+    android:layout_height="0dp"
+    tools:listitem="@layout/rv_item_ncmfile" />
+```
+
+我们给View外层包裹一个布局即可(什么布局都可),然后View占满此布局即可解决
+
+```xml
+<FrameLayout
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        android:layout_height="0dp">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv"
+            android:background="@color/red"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/rv_item_ncmfile" />
+    </FrameLayout>
+```
 
 如果需要针对单个Activity、Fragment、View定制页面，重写接口的回调方法：
 
